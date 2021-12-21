@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Smart House Control</title>
+        <link rel='stylesheet' href='style.css'>
+        <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css'>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<meta name="Vikkey" content="Vivek Gupta & IoTMonk">
+		<meta http-equiv="Access-Control-Allow-Origin" content="*">  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+ <body>
+	<style>
+  
+		
+			</style>
+    <input type='checkbox' id='check'>
+    <!--header area start-->
+    <header>
+        <label for='check'>
+            <i class='fas fa-bars' id='sidebar_btn'></i>
+        </label>
+        <div class = 'left_area'>
+            <h3>Control and Monitor</h3>
+        </div>
+    </header>
+    <!--header area end-->
+    <!--sidebar start-->
+    <div class='sidebar'>
+        <center>
+            <img src='home.png' class='home' width="200" height="200" alt=''>
+            <h4>Smart home control</h4>
+        </center>
+        <a href="index.html"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="monitor.html"><i class="fas fa-desktop"></i><span>Monitor</span></a>
+        <a href="http://127.0.0.1/Smart_Home/SetValue.php"><i class="fas fa-sliders-h"></i><span>Control</span></a>
+        <a href="member.html"><i class="fas fa-user-friends"></i><span>Member</span></a>
+    </div>
+    <!--sidebar end-->
+
+    <div class='content'>
+        <br>
+        <div class='wrapper'>
+            <h1>Temperature and Humidity Monitor</h1>
+            <div class='team'>
+			    <div class="form">
+				    <br><br>
+				    <p style = 'line-height: 60px;font-family: Helvetica;color: rgb(0, 0, 0);font-size: 60px;' id="temperature">
+					    <img src = 'temperature.png' height="60px" width="60px" style='vertical-align: middle' /> <span id = "TEMP">  </span>
+				    </p>
+				    <p style = 'line-height: 60px;font-family: Helvetica;color: rgb(0, 0, 0);font-size: 60px;' id="humidity">
+					    <img src = 'humidity.png' height="60px" width="60px" style='vertical-align: middle' /> <span id = "HUMID">  </span>
+				    </p>
+			    </div>
+            <div class='chartbox'>
+                <div><canvas id="myChart1"></canvas></div>
+                <div><canvas id="myChart2"></canvas></div>
+            </div>
+            </div>
+
+        </div>
+         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+            let Log1 = [];
+            let temp1 = [];
+            let humid1 = [];
+            //load data tu database
+            $(document).ready(function(){
+                UpdateValue();
+                UpdateChart();
+            });
+            setInterval(UpdateValue,1000);
+            setInterval(UpdateChart,1000);
+            function UpdateValue(){
+                // yeu cau server goi file getdata.php
+                $.post("getdata.php",
+                function(data){
+                    var TEMP = data[9].TEMP;
+                    var HUMID = data[9].HUMID;
+                    document.getElementById("TEMP").innerHTML=TEMP;
+                    document.getElementById("HUMID").innerHTML=HUMID;
+                })
+            }
+            function UpdateChart(){
+                $.post("getdata.php",function(data){
+                    console.log(data);
+                    Log1 = [];
+                    temp1 = [];
+                    humid1 = [];
+                    for (var i in data){
+                        Log1.push(data[i].Log);
+                        temp1.push(data[i].TEMP);
+                        humid1.push(data[i].HUMID);
+                    }
+                    console.log(temp1);
+                    myChart1.data.labels=Log1;
+                    myChart1.data.datasets.forEach((dataset) => {
+                    dataset.data=temp1;
+                                    });
+                    myChart1.update();
+
+                    myChart2.data.labels=Log1;
+                    myChart2.data.datasets.forEach((dataset) => {
+                    dataset.data=humid1;
+                                    });
+                    myChart2.update();
+                })
+
+            }
+
+            const ctx1 = document.getElementById('myChart1').getContext('2d');
+            const myChart1 = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: Log1,
+                    datasets: [{
+                        label: 'Temperature',
+                        data: temp1,
+                        backgroundColor: 'black',
+                        borderColor: 'black',
+                        borderWidth: 2,
+                        scaleFontColor: "#FFFFFF",
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                    legend: {
+                        labels: {
+                            color:'black',
+                            font: {
+                                size: 25
+                            }
+                        }
+                    }
+                }
+                }
+            });
+
+            const ctx2 = document.getElementById('myChart2').getContext('2d');
+            const myChart2 = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: Log1,
+                    datasets: [{
+                        label: 'Humidity',
+                        data: humid1,
+                        backgroundColor:'black',
+                        borderColor:'black',
+                        borderWidth: 2,
+                        scaleFontColor: "#FFFFFF"
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                    legend: {
+                        labels: {
+                            color:'black',
+                            font: {
+                                size: 25
+                            }
+                        }
+                        
+                    }
+                }
+                }
+            });
+
+            </script>
+	</body>
+</html>
